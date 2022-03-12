@@ -12,7 +12,7 @@ const getAllProducts = async (req, res) => {
 
   // filter by name
   if (name) {
-    queryObject.name = name;
+    queryObject.name = { $regex: name, $options: "i" };
   }
 
   // filter by company
