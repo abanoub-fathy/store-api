@@ -36,10 +36,7 @@ const getAllProducts = async (req, res) => {
   }
 
   // execute the query to find the products
-  const total = await Product.find(queryObject)
-    .sort(sort)
-    .select(fields)
-    .count();
+  const total = await Product.find(queryObject).count();
   const products = await Product.find(queryObject).sort(sort).select(fields);
 
   // return the response
