@@ -1,7 +1,7 @@
 const Product = require("../models/product");
 
 const getAllProducts = async (req, res) => {
-  // destructur the props that user can search with them
+  // destructure the props that user can filter with them
   const { featured, name, company } = req.query;
   const queryObject = {};
 
@@ -12,6 +12,7 @@ const getAllProducts = async (req, res) => {
 
   // filter by name
   if (name) {
+    // apply regex for search by name
     queryObject.name = { $regex: name, $options: "i" };
   }
 
@@ -20,12 +21,29 @@ const getAllProducts = async (req, res) => {
     queryObject.company = company;
   }
 
-  // find the products
-  const nbHits = await Product.find(queryObject).count();
-  const products = await Product.find(queryObject);
+  // destructure the sorting props
+  let { sort } = req.query;
+  if (sort) {
+    sort = sort.split(",").join(" ");
+  } else {
+    sort = "-createdAt";
+  }
+
+  // destructure the selection fields
+  let { fields } = req.query;
+  if (fields) {
+    fields = fields.split(",").join(" ");
+  }
+
+  // execute the query to find the products
+  const total = await Product.find(queryObject)
+    .sort(sort)
+    .select(fields)
+    .count();
+  const products = await Product.find(queryObject).sort(sort).select(fields);
 
   // return the response
-  res.send({ nbHits, products });
+  res.send({ total, nbHits: products.length, products });
 };
 
 const getAllProductsStatic = async (req, res) => {
