@@ -35,12 +35,26 @@ const getAllProducts = async (req, res) => {
     fields = fields.split(",").join(" ");
   }
 
+  // pagination
+  let { page } = req.query;
+  if (+page < 1) page = 1;
+  const limit = +req.query.limit || 10;
+  const skip = (page - 1) * limit;
+
   // execute the query to find the products
   const total = await Product.find(queryObject).count();
-  const products = await Product.find(queryObject).sort(sort).select(fields);
+  const products = await Product.find(queryObject)
+    .sort(sort)
+    .select(fields)
+    .limit(limit)
+    .skip(skip);
 
   // return the response
-  res.send({ total, nbHits: products.length, products });
+  res.send({
+    totalPages: Math.ceil(total / limit),
+    nbHits: products.length,
+    products,
+  });
 };
 
 const getAllProductsStatic = async (req, res) => {
