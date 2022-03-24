@@ -2,7 +2,7 @@ const Product = require("../models/product");
 
 const getAllProducts = async (req, res) => {
   // destructure the props that user can filter with them
-  const { featured, name, company } = req.query;
+  const { featured, name, company, numericFilters } = req.query;
   const queryObject = {};
 
   // filter by featured
@@ -18,7 +18,28 @@ const getAllProducts = async (req, res) => {
 
   // filter by company
   if (company) {
-    queryObject.company = company;
+    queryObject.company = { $regex: company, $options: "i" };
+  }
+
+  // numericFilters
+  if (numericFilters) {
+    const operatorMap = {
+      ">": "$gt",
+      "<": "$lt",
+      "=": "$eq",
+      ">=": "$gte",
+      "<=": "$lte",
+    };
+    let regEx = /\b(>|<|>=|<=|=)\b/g;
+    let filters = numericFilters.replace(
+      regEx,
+      (match) => `-${operatorMap[match]}-`
+    );
+
+    filters.split(",").forEach((part) => {
+      const [prop, operator, value] = part.split("-");
+      queryObject[prop] = { ...queryObject[prop], [operator]: Number(value) };
+    });
   }
 
   // destructure the sorting props

@@ -3,9 +3,6 @@ const connectToDB = require("./db/connect");
 const express = require("express");
 require("express-async-errors");
 
-// connect to the DB
-require("./db/connect");
-
 // create express app
 const app = express();
 
